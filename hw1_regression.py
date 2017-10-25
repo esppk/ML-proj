@@ -28,20 +28,35 @@ def part2(lambda_ = lambda_input, sigma2 = sigma2_input):
     ## Return : active, Final list of values to write in the file
     I = np.diag([1]*X_train.shape[1])
     Sigma = np.linalg.inv(lambda_*I + 1/sigma2*np.dot(X_train.T, X_train))
-    sig_pos = []
-    for i in range(X_train.shape[0]): 
-        x = X_train[i]
-        n, = x.shape
-        x.shape = (n, 1)
-        sig2 = np.dot(np.dot(x.T, Sigma), x)
-        sig_pos.append(sig2)
-    
-    sig_unsorted = copy.copy(sig_pos)
-    sig_pos.sort()
     idx = []
-    for each in range(10):
-        idx.append(sig_unsorted.index(sig_pos[each]) + 1)
-    
+    picked = set()
+    x_dict = {}
+    for i in range(X_test.shape[0]):
+        x = copy.copy(tuple(X_test[i,:]))
+        x_dict[x] = i+1
+        
+    for i in range(10): 
+
+        sig_dict = dict()
+        for ii in range(X_test.shape[0]):
+            x = X_test[ii]
+            x_ = tuple(x)
+            if x_ not in picked:
+                
+                n, = x.shape
+                x.shape = (n, 1)
+                sig2 = np.dot(np.dot(x.T, Sigma), x)[0]
+                sig_dict[float(sig2)] = x_
+        s_list = list(sig_dict.keys())  
+        s_list.sort()
+        max_ = s_list[-1]
+        x0 = sig_dict[max_]
+        picked.add(x0)
+        
+        idx.append(x_dict[x0])
+        Sigma = np.linalg.inv(np.linalg.inv(Sigma) + (1/sigma2)*np.outer(np.array(x0),np.array(x0)))
+            
+  
     return idx
         
     
